@@ -19,19 +19,26 @@ export type BadgeId =
   | "level-3"
   | "level-5"
   | "goal-completed"
-  | "kwento-finisher";
+  | "kwento-finisher"
+  | "loan-payment"
+  | "paluwagan-member"
+  | "voucher-redeemed";
 
 export type AvatarLevel = 1 | 3 | 5 | 10;
+
+export type Language = "tagalog" | "cebuano" | "english";
 
 export type Profile = {
   id: string;
   name: string;
   avatarLevel: AvatarLevel;
   totalXP: number;
+  rewardPoints: number;
   streak: number;
   lastActiveDate: string;
   badges: BadgeId[];
   createdAt: string;
+  language: Language;
 };
 
 export type Deposit = {
@@ -49,6 +56,7 @@ export type SavingsGoal = {
   deadline: string;
   deposits: Deposit[];
   completed: boolean;
+  aiPlan?: string; // AI-generated savings plan
 };
 
 export type Transaction = {
@@ -79,6 +87,7 @@ export type Mission = {
   type: "daily" | "weekly";
   completed: boolean;
   completedAt?: string;
+  trigger?: "deposit" | "scan" | "chat" | "loan-payment" | "manual";
 };
 
 export type KwentoProgress = {
@@ -119,6 +128,61 @@ export type WeeklyTip = {
   generatedAt: string; // ISO
 };
 
+// ── NEW: Loan Payments ─────────────────────────────────────────────
+export type LoanPayment = {
+  id: string;
+  amount: number;
+  dueDate: string;
+  paidDate?: string;
+  onTime: boolean;
+  note?: string;
+  loanType: string; // e.g. "Micro-loan", "Group Loan"
+};
+
+// ── NEW: Paluwagan (Digital Rotating Savings Group) ────────────────
+export type PaluwagaGroup = {
+  id: string;
+  name: string;
+  contributionAmount: number;
+  frequency: "weekly" | "monthly";
+  members: PaluwagaMember[];
+  currentRound: number;
+  totalRounds: number;
+  startDate: string;
+  completed: boolean;
+  inviteCode: string;
+};
+
+export type PaluwagaMember = {
+  id: string;
+  name: string;
+  isCurrentUser: boolean;
+  payoutOrder: number;
+  contributions: PaluwagaContribution[];
+};
+
+export type PaluwagaContribution = {
+  id: string;
+  round: number;
+  amount: number;
+  paidDate?: string;
+  paid: boolean;
+};
+
+// ── NEW: Rewards / Vouchers ────────────────────────────────────────
+export type Voucher = {
+  id: string;
+  title: string;
+  description: string;
+  partner: string;
+  pointsCost: number;
+  category: "food" | "load" | "discount" | "transport" | "business";
+  emoji: string;
+  expiresAt?: string;
+  redeemed?: boolean;
+  redeemedAt?: string;
+};
+
 // Storage keys
 export const KEYS = {
   profile: "kabuhayan:profile",
@@ -132,6 +196,10 @@ export const KEYS = {
   tambayan: "kabuhayan:tambayan",
   weeklyTip: "kabuhayan:weeklyTip",
   onboarded: "kabuhayan:onboarded",
+  loanPayments: "kabuhayan:loanPayments",
+  paluwagan: "kabuhayan:paluwagan",
+  vouchers: "kabuhayan:vouchers",
+  creditNarrative: "kabuhayan:creditNarrative",
 } as const;
 
 export function uid(): string {
@@ -156,13 +224,73 @@ export function blankProfile(): Profile {
     name: "Kaibigan",
     avatarLevel: 1,
     totalXP: 0,
+    rewardPoints: 0,
     streak: 0,
     lastActiveDate: todayISO(),
     badges: [],
     createdAt: todayISO(),
+    language: "tagalog",
   };
 }
 
 export function clearAll(): void {
   Object.values(KEYS).forEach((k) => localStorage.removeItem(k));
 }
+
+// ── Mock voucher catalog ───────────────────────────────────────────
+export const VOUCHER_CATALOG: Voucher[] = [
+  {
+    id: "v1",
+    title: "₱20 GCash Load",
+    description: "Libreng load sa GCash, pwede ring ibigay sa iba.",
+    partner: "GCash",
+    pointsCost: 200,
+    category: "load",
+    emoji: "📱",
+  },
+  {
+    id: "v2",
+    title: "Libre na Kape",
+    description: "Isang libre na kape sa alinmang RAFI partner café sa Cebu.",
+    partner: "RAFI Partner Café",
+    pointsCost: 150,
+    category: "food",
+    emoji: "☕",
+  },
+  {
+    id: "v3",
+    title: "10% Diskwento sa Sari-sari Store",
+    description: "10% off sa susunod na pagbili sa partner sari-sari stores.",
+    partner: "RAFI MSME Partners",
+    pointsCost: 100,
+    category: "discount",
+    emoji: "🏪",
+  },
+  {
+    id: "v4",
+    title: "₱50 Jeepney e-Discount",
+    description: "₱50 off sa eBayad jeepney load sa partner terminals.",
+    partner: "eBayad",
+    pointsCost: 300,
+    category: "transport",
+    emoji: "🚌",
+  },
+  {
+    id: "v5",
+    title: "Libre na Business Planning Kit",
+    description: "Digital negosyo starter kit para sa iyong sari-sari store.",
+    partner: "RAFI MFI",
+    pointsCost: 500,
+    category: "business",
+    emoji: "📦",
+  },
+  {
+    id: "v6",
+    title: "₱100 Palengke Voucher",
+    description: "₱100 credit sa partner palengke stores sa Cebu.",
+    partner: "RAFI Partner Markets",
+    pointsCost: 400,
+    category: "food",
+    emoji: "🥬",
+  },
+];

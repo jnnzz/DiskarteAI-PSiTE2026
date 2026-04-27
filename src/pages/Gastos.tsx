@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import {
   KEYS,
   uid,
   todayISO,
   GASTOS_CATEGORIES,
+  blankProfile,
   type GastosCategory,
   type Transaction,
   type Receipt,
+  type Profile,
+  type LoanPayment,
+  type SavingsGoal,
 } from "@/lib/storage";
 import { PageHeader } from "@/components/PageHeader";
 import { Peso } from "@/components/Peso";
@@ -22,9 +26,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Camera, Plus, Receipt as ReceiptIcon, Sparkles, Upload } from "lucide-react";
+import { Camera, Plus, Receipt as ReceiptIcon, Sparkles, Upload, MessageCircle, RefreshCw } from "lucide-react";
 import { useAwardXP } from "@/hooks/useAwardXP";
-import { analyzeReceipt } from "@/lib/ai";
+import { analyzeReceipt, generateLoanReadinessScore, generateSpendingInsight, type LoanReadinessResult } from "@/lib/ai";
 import { toast } from "sonner";
 import {
   Bar,
@@ -38,6 +42,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { cn } from "@/lib/utils";
 
 const CATEGORY_COLORS: Record<GastosCategory, string> = {
   kainan: "hsl(17 88% 40%)",
@@ -53,9 +58,13 @@ function dayKey(iso: string): string {
 }
 
 export default function Gastos() {
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
+  const [profile] = useLocalStorage<Profile>(KEYS.profile, blankProfile);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>(KEYS.transactions, []);
   const [receipts, setReceipts] = useLocalStorage<Receipt[]>(KEYS.receipts, []);
+  const [loanPayments] = useLocalStorage<LoanPayment[]>(KEYS.loanPayments, []);
+  const [goals] = useLocalStorage<SavingsGoal[]>(KEYS.goals, []);
   const award = useAwardXP();
 
   const initialTab = params.get("action") === "scan" ? "scan" : "log";
@@ -74,12 +83,50 @@ export default function Gastos() {
     parsed: Awaited<ReturnType<typeof analyzeReceipt>> | null;
   } | null>(null);
 
+  // AI Insights state
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [loadingInsight, setLoadingInsight] = useState(false);
+  const [loanScore, setLoanScore] = useState<LoanReadinessResult | null>(null);
+  const [loadingScore, setLoadingScore] = useState(false);
+
   useEffect(() => {
     if (params.get("action")) {
       setParams({}, { replace: true });
     }
     // eslint-disable-next-line
   }, []);
+
+  // Load insights when tab switches to insights
+  useEffect(() => {
+    if (tab !== "insights") return;
+    if (!aiInsight) loadSpendingInsight();
+    if (!loanScore) loadLoanScore();
+  // eslint-disable-next-line
+  }, [tab]);
+
+  async function loadSpendingInsight() {
+    setLoadingInsight(true);
+    try {
+      const insight = await generateSpendingInsight(transactions, profile.language);
+      setAiInsight(insight);
+    } catch {
+      setAiInsight("Hindi ma-generate ang insight ngayon. Subukan ulit mamaya.");
+    } finally {
+      setLoadingInsight(false);
+    }
+  }
+
+  async function loadLoanScore() {
+    setLoadingScore(true);
+    try {
+      const result = await generateLoanReadinessScore(transactions, goals, loanPayments, profile.language);
+      setLoanScore(result);
+    } catch {
+      setLoanScore(null);
+    } finally {
+      setLoadingScore(false);
+    }
+  }
 
   function logManual() {
     if (!amount) return;
@@ -96,6 +143,8 @@ export default function Gastos() {
     setAmount("");
     setNote("");
     award(5, "Gastos na-log", "first-gastos");
+    // Reset insight on new log
+    setAiInsight(null);
   }
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -143,6 +192,7 @@ export default function Gastos() {
     setTransactions((t) => [tx, ...t]);
     setPendingReceipt(null);
     award(10, "Receipt na-scan!");
+    setAiInsight(null);
   }
 
   // ----- Insights data -----
@@ -175,7 +225,10 @@ export default function Gastos() {
   }, [transactions]);
 
   const weekTotal = byCategory.reduce((s, c) => s + c.value, 0);
-  const topCategory = byCategory.sort((a, b) => b.value - a.value)[0];
+
+  const scoreColor = loanScore
+    ? loanScore.score >= 70 ? "text-green-500" : loanScore.score >= 40 ? "text-yellow-500" : "text-red-500"
+    : "";
 
   return (
     <div className="px-4 pb-6 lg:px-8 lg:pb-10 lg:pt-2">
@@ -287,10 +340,31 @@ export default function Gastos() {
               </Button>
             </div>
           </div>
+
+          {receipts.length > 0 && (
+            <div className="mt-4">
+              <h3 className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Scanned Receipts
+              </h3>
+              <ul className="space-y-2">
+                {receipts.slice(0, 5).map((r) => (
+                  <li key={r.id} className="flex items-center gap-3 rounded-xl bg-card px-3 py-2.5 shadow-soft">
+                    <img src={r.imageDataUrl} alt="receipt" className="size-10 rounded-lg object-cover" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold">{GASTOS_CATEGORIES.find(c => c.id === r.suggestedCategory)?.label}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(r.scannedAt).toLocaleDateString("en-PH")}</p>
+                    </div>
+                    <Peso amount={r.parsedTotal} className="text-primary" sign="minus" />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </TabsContent>
 
         {/* Insights */}
         <TabsContent value="insights" className="mt-4 space-y-4">
+          {/* Weekly bar chart */}
           <div className="rounded-3xl bg-card p-5 shadow-card">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Linggong gastos
@@ -318,6 +392,7 @@ export default function Gastos() {
             </div>
           </div>
 
+          {/* Category breakdown */}
           {byCategory.length > 0 && (
             <div className="rounded-3xl bg-card p-5 shadow-card">
               <p className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -360,19 +435,101 @@ export default function Gastos() {
             </div>
           )}
 
-          {topCategory && (
-            <div className="rounded-3xl bg-gradient-warm p-[2px] shadow-card">
-              <div className="rounded-[calc(1.5rem-2px)] bg-card p-4">
-                <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+          {/* AI Spending Insight (real Gemini call) */}
+          <div className="rounded-3xl bg-gradient-warm p-[2px] shadow-card">
+            <div className="rounded-[calc(1.5rem-2px)] bg-card p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
                   <Sparkles className="size-4" />
-                  AI insight
+                  AI Insight
                 </div>
-                <p className="text-sm">
-                  Ang pinaka-malaking gastos mo ngayong linggo ay sa <strong>{GASTOS_CATEGORIES.find((c) => c.id === topCategory.name)?.label}</strong> — <Peso amount={topCategory.value} className="text-sm" />. Kaya mo pa bang bawasan, kahit konti?
-                </p>
+                <button
+                  onClick={loadSpendingInsight}
+                  disabled={loadingInsight}
+                  className="rounded-full p-1 text-muted-foreground transition hover:bg-secondary"
+                  title="Refresh"
+                >
+                  <RefreshCw className={cn("size-3.5", loadingInsight && "animate-spin")} />
+                </button>
               </div>
+              <p className="text-sm leading-relaxed">
+                {loadingInsight ? "Iniisip ng AI..." : aiInsight ?? "I-tap ang Insights tab para ma-generate."}
+              </p>
             </div>
-          )}
+          </div>
+
+          {/* Loan Readiness Score */}
+          <div className="rounded-3xl bg-card p-5 shadow-card">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                🏦 Loan Readiness Score
+              </p>
+              <button
+                onClick={loadLoanScore}
+                disabled={loadingScore}
+                className="rounded-full p-1 text-muted-foreground transition hover:bg-secondary"
+              >
+                <RefreshCw className={cn("size-3.5", loadingScore && "animate-spin")} />
+              </button>
+            </div>
+
+            {loadingScore ? (
+              <div className="space-y-2">
+                <div className="h-8 animate-pulse rounded-xl bg-secondary" />
+                <div className="h-4 w-2/3 animate-pulse rounded-xl bg-secondary" />
+              </div>
+            ) : loanScore ? (
+              <div className="space-y-3">
+                {/* Score ring */}
+                <div className="flex items-center gap-4">
+                  <div className="relative flex size-20 items-center justify-center rounded-full bg-secondary">
+                    <span className={cn("text-2xl font-extrabold tabular", scoreColor)}>{loanScore.score}</span>
+                    <span className="absolute bottom-2 text-[9px] font-bold text-muted-foreground">/ 100</span>
+                  </div>
+                  <div>
+                    <p className={cn("text-lg font-extrabold", scoreColor)}>{loanScore.rating}</p>
+                    <p className="text-xs text-muted-foreground">para sa RAFI loan renewal</p>
+                  </div>
+                </div>
+
+                {/* Breakdown bars */}
+                <div className="space-y-2">
+                  {loanScore.breakdown.map((b) => (
+                    <div key={b.label}>
+                      <div className="mb-0.5 flex justify-between text-xs font-semibold">
+                        <span>{b.label}</span>
+                        <span className="text-muted-foreground">{b.score}/{b.max}</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-700"
+                          style={{ width: `${(b.score / b.max) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* AI insight */}
+                <p className="rounded-xl bg-secondary p-3 text-xs leading-relaxed">{loanScore.insight}</p>
+
+                {/* CTA to Gabay */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate("/gabay")}
+                >
+                  <MessageCircle className="size-4" />
+                  Pag-usapan kay Gabay ang aking score
+                </Button>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" onClick={loadLoanScore} className="w-full">
+                I-compute ang Loan Readiness Score
+              </Button>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
