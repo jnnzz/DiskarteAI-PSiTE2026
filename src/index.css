@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* KabuhayanAI — Bayanihan Warmth design tokens.
+   All colors HSL. Light mode only. */
+
+@layer base {
+  :root {
+    /* Surfaces & text */
+    --background: 35 90% 94%;          /* rice paper cream */
+    --foreground: 24 10% 10%;          /* deep brown */
+
+    --card: 0 0% 100%;
+    --card-foreground: 24 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 10% 10%;
+
+    /* Primary: Vigan terracotta */
+    --primary: 17 88% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: warm tan surface */
+    --secondary: 30 40% 92%;
+    --secondary-foreground: 24 10% 10%;
+
+    --muted: 30 30% 90%;
+    --muted-foreground: 30 6% 40%;
+
+    /* Accent: bamboo green (ipon / growth) */
+    --accent: 82 78% 36%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Highlight: gold (rewards / level-ups) */
+    --highlight: 38 92% 50%;
+    --highlight-foreground: 24 10% 10%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 30% 88%;
+    --input: 30 30% 88%;
+    --ring: 17 88% 40%;
+
+    --radius: 1rem;
+
+    /* Tinted shadows */
+    --shadow-soft: 0 1px 3px hsl(24 10% 10% / 0.06), 0 1px 2px hsl(24 10% 10% / 0.04);
+    --shadow-card: 0 4px 12px hsl(17 88% 40% / 0.08), 0 2px 4px hsl(24 10% 10% / 0.04);
+    --shadow-lift: 0 12px 32px hsl(17 88% 40% / 0.16), 0 4px 8px hsl(24 10% 10% / 0.06);
+
+    /* Gradients */
+    --gradient-warm: linear-gradient(135deg, hsl(17 88% 40%), hsl(38 92% 50%));
+    --gradient-cream: linear-gradient(180deg, hsl(35 90% 96%), hsl(35 90% 92%));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body, #root {
+    @apply h-full;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* Tabular numerals for peso amounts everywhere they need it */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-lift { box-shadow: var(--shadow-lift); }
+
+  .bg-gradient-warm { background: var(--gradient-warm); }
+  .bg-gradient-cream { background: var(--gradient-cream); }
+
+  /* Phone-shaped column max width across the app */
+  .app-column {
+    @apply mx-auto w-full max-w-md;
+  }
+}
+
+/* Reduced motion: disable celebratory animations */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
