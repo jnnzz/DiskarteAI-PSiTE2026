@@ -1,19 +1,20 @@
-import type { GastosCategory, Profile, SavingsGoal, Transaction } from "./storage";
+const fs = require('fs');
+const newContent = \import type { GastosCategory, Profile, SavingsGoal, Transaction } from "./storage";
 
 const GEMINI_API_KEY = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined) ?? "";
 
 function getGeminiUrl(stream = false): string {
-  const model = "gemini-2.5-flash";
-  const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}`;
+  const model = "gemini-1.5-flash";
+  const baseUrl = \\\https://generativelanguage.googleapis.com/v1beta/models/\\\\;
   const method = stream ? "streamGenerateContent?alt=sse" : "generateContent";
-  return `${baseUrl}:${method}&key=${GEMINI_API_KEY}`;
+  return \\\\:\&key=\\\\;
 }
 
 const FALLBACK_TIPS = [
-  "Pay yourself first — bago ka gumastos, magtabi muna ng kahit ₱20. Maliit, pero tuloy-tuloy.",
+  "Pay yourself first � bago ka gumastos, magtabi muna ng kahit ?20. Maliit, pero tuloy-tuloy.",
   "Subukan ang 24-hour rule: bago bumili ng mahal, hintayin mo ng isang araw. Kung hindi mo na naisip, hindi mo kailangan.",
-  "I-track ang lahat ng gastos sa isang linggo. Magugulat ka kung saan napupunta ang ₱100s mo.",
-  "Maglagay ng emergency fund — kahit ₱500 lang muna. Para pag may biglaang gastos, hindi ka mag-uutang.",
+  "I-track ang lahat ng gastos sa isang linggo. Magugulat ka kung saan napupunta ang ?100s mo.",
+  "Maglagay ng emergency fund � kahit ?500 lang muna. Para pag may biglaang gastos, hindi ka mag-uutang.",
 ];
 
 export async function fetchWeeklyTip(name: string): Promise<string> {
@@ -23,7 +24,7 @@ export async function fetchWeeklyTip(name: string): Promise<string> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `Generate a short, very encouraging financial tip in Tagalog/Taglish for a user named ${name}. Keep it 1-2 positive sentences maximum.` }] }]
+        contents: [{ parts: [{ text: \\\Generate a short, very encouraging financial tip in Tagalog/Taglish for a user named \. Keep it 1-2 positive sentences maximum.\\\ }] }]
       })
     });
     if (!res.ok) throw new Error();
@@ -35,7 +36,6 @@ export async function fetchWeeklyTip(name: string): Promise<string> {
 }
 
 export type ChatTurn = { role: "user" | "gabay"; content: string };
-
 export type ChatContext = {
   profile: Pick<Profile, "name" | "avatarLevel" | "totalXP" | "streak">;
   recentGastos: { amount: number; category: GastosCategory; note?: string; date: string }[];
@@ -48,7 +48,7 @@ export async function streamGabay(
   onDelta: (delta: string) => void,
 ): Promise<string> {
   if (!GEMINI_API_KEY) {
-    const fallback = "Pasensya, kaibigan — wala pa akong koneksyon kay Gemini. Magtabi ng ₱20 ngayon!";
+    const fallback = "Pasensya, kaibigan � wala pa akong koneksyon kay Gemini. Magtabi ng ?20 ngayon!";
     onDelta(fallback);
     return fallback;
   }
@@ -58,7 +58,7 @@ export async function streamGabay(
     parts: [{ text: m.content }]
   }));
 
-  const systemInstruction = `You are Gabay, a friendly, encouraging, and highly knowledgeable Filipino financial coach. You speak in casual conversational Taglish. The user is named ${context.profile.name}. Recent spending: ${JSON.stringify(context.recentGastos)}. Active savings goals: ${JSON.stringify(context.activeGoals)}. Keep answers brief, highly actionable, and extremely motivating.`;
+  const systemInstruction = \\\You are Gabay, a friendly, encouraging, and highly knowledgeable Filipino financial coach. You speak in casual conversational Taglish. The user is named \. Recent spending: \. Active savings goals: \. Keep answers brief, highly actionable, and extremely motivating.\\\;
 
   const res = await fetch(getGeminiUrl(true), {
     method: "POST",
@@ -82,27 +82,26 @@ export async function streamGabay(
     const { done, value } = await reader.read();
     if (done) break;
     buf += decoder.decode(value, { stream: true });
-    
-    let boundary = buf.indexOf('\n');
+    let boundary = buf.indexOf('\\n');
     while (boundary !== -1) {
       const line = buf.slice(0, boundary).trim();
       buf = buf.slice(boundary + 1);
       
       if (line.startsWith("data:")) {
         const payload = line.slice(5).trim();
-        if (payload && payload !== "[DONE]") {
+        if (payload) {
           try {
              const json = JSON.parse(payload);
-             const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-             if (text) {
-               full += text;
-               onDelta(text);
+             const delta = json.candidates?.[0]?.content?.parts?.[0]?.text;
+             if (delta) {
+               full += delta;
+               onDelta(delta);
              }
           } catch(e) {}
         }
       }
       
-      boundary = buf.indexOf('\n');
+      boundary = buf.indexOf('\\n');
     }
   }
   return full;
@@ -118,14 +117,14 @@ export type ParsedReceipt = {
 export async function analyzeReceipt(imageDataUrl: string): Promise<ParsedReceipt> {
   if (!GEMINI_API_KEY) throw new Error("No Gemini key");
 
-  const match = imageDataUrl.match(/^data:(image\/[a-zA-Z]+);base64,(.+)\s*$/i);
+  const match = imageDataUrl.match(/^data:(image\\/[a-zA-Z]+);base64,(.+)\s*$/i);
   if (!match) throw new Error("Invalid image source");
   const mimeType = match[1];
   const base64Data = match[2];
 
-  const prompt = `Analyze this receipt image. Return ONLY a valid JSON object matching this exact schema: {"total": number, "items": [{"name": string, "price": number}], "suggestedCategory": string (must be one of "pagkain", "transpo", "bahay", "luho", "iba"), "merchant": string (optional store name)}. No markdown blocks.`;
+  const prompt = \\\Analyze this receipt image. Return ONLY a valid JSON object matching this exact schema: {"total": number, "items": [{"name": string, "price": number}], "suggestedCategory": string (must be one of "pagkain", "transpo", "bahay", "luho", "iba"), "merchant": string (optional store name)}. No markdown blocks.\\\;
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+  const res = await fetch(\\\https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\\\\, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -141,7 +140,7 @@ export async function analyzeReceipt(imageDataUrl: string): Promise<ParsedReceip
   if (!res.ok) throw new Error("Gemini analyze failed");
   const data = await res.json();
   let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-  text = text.replace(/\`\`\`json/g, "").replace(/\`\`\`/g, "").trim();
+  text = text.replace(/\\\\\\\\\json/g, "").replace(/\\\\\\\\\/g, "").trim();
   
   return JSON.parse(text) as ParsedReceipt;
 }
@@ -149,7 +148,7 @@ export async function analyzeReceipt(imageDataUrl: string): Promise<ParsedReceip
 export async function generateKwentoSummary(storyTitle: string, choices: { label: string; lesson?: string }[]): Promise<string> {
   if (!GEMINI_API_KEY) return "Magaling! Ang totoong aral: walang masamang pagpipilian sa pera basta't may plano at may pagmamahal sa pamilya.";
   try {
-    const prompt = `Give me a short, inspiring, 2 sentence Taglish summary/lesson learned based on the story "${storyTitle}" and the user's choices: ${JSON.stringify(choices)}`;
+    const prompt = \\\Give me a short, inspiring, 2 sentence Taglish summary/lesson learned based on the story "\" and the user's choices: \\\\;
     const res = await fetch(getGeminiUrl(false), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -174,3 +173,7 @@ export function buildChatContext(profile: Profile, transactions: Transaction[], 
     activeGoals: goals.filter((g) => !g.completed).map((g) => ({ name: g.name, current: g.currentAmount, target: g.targetAmount })),
   };
 }
+\;
+
+fs.writeFileSync('src/lib/ai.ts', newContent);
+console.log('Successfully written ai.ts');
