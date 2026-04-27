@@ -1,0 +1,218 @@
+# KabuhayanAI — Module Gap Analysis & Implementation Plan
+
+> **Purpose:** Documents the delta between **what is currently implemented** vs. **what is required** per the 7 module specifications. Each module section lists what exists, what is missing, and what needs to change.
+
+---
+
+## 1. 🤖 Gabay AI — Conversational AI Coach
+
+### ✅ Currently Implemented
+- Basic chat UI (user ↔ Gabay bubbles) with Gemini streaming
+- Taglish/Filipino suggestions as quick-start prompts
+- Persists chat history in localStorage
+- Awards XP on first message per session
+
+### ❌ Missing / Misaligned
+| Gap | Required Behavior |
+|-----|-------------------|
+| **No voice-to-text input** | Users should be able to speak their questions/expenses instead of typing. Requires `SpeechRecognition` Web API with a mic button in the input bar. |
+| **No RAFI-specific knowledge** | Gabay only gives generic financial advice. Needs a knowledge base or system prompt injection covering RAFI loan products, insurance claims process, and repayment coaching. |
+| **No insurance claim support** | Module explicitly requires explaining insurance claims — not present. |
+| **No loan repayment coaching** | Gabay should proactively coach on RAFI loan repayment schedules based on user data. |
+| **Language selection is implicit** | Module specifies Cebuano / Filipino / English — Cebuano responses are not explicitly prompted or tested. A language toggle (Cebuano · Filipino · English) should be added. |
+
+### 🔧 Changes Needed
+- Add mic button → `SpeechRecognition` (Web Speech API) for voice-to-text
+- Expand Gemini system prompt with RAFI loan products, repayment, and insurance info
+- Add a language preference toggle (Cebuano / Filipino / English) stored in profile
+- Inject language preference into system instruction
+- Add RAFI-specific quick-start prompts (e.g., "Kailan ko babayaran ang utang ko?" / "Pano mag-claim ng insurance?")
+
+---
+
+## 2. 🐷 Ipon Tracker — Smart Savings Coach
+
+### ✅ Currently Implemented
+- Create savings goals with name, target amount, and deadline
+- Deposit amounts per goal with optional notes
+- Progress ring with % and history log
+- Celebrates goal completion with confetti + XP
+
+### ❌ Missing / Misaligned
+| Gap | Required Behavior |
+|-----|-------------------|
+| **No AI-powered savings planner** | Module requires AI to suggest a *personalized savings plan* — e.g., "Save ₱X per day to reach your goal by [date]." |
+| **No progress nudges** | Should send push/in-app notifications or toast nudges aligned with RAFI micro-savings products. |
+| **No RAFI micro-savings product tie-in** | No mention of RAFI products or linkage to RAFI savings accounts. |
+| **No weekly AI-generated savings tip** | Home has a weekly tip widget, but Ipon page itself has no AI coaching message based on the user's goal progress or spending. |
+| **No spending-based tips** | Module says tips are "based on spending" — Ipon page doesn't read transaction data to tailor advice. |
+
+### 🔧 Changes Needed
+- Add an AI savings coach panel per goal: "Para maabot mo ang ₱5,000 sa loob ng 30 araw, kailangan mong mag-ipon ng ₱167/araw."
+- Add a `generateSavingsPlan(goal, transactions)` function in `ai.ts`
+- Add in-app nudge system (toast + Gabay suggestion link) triggered when user hasn't deposited in X days
+- Add RAFI micro-savings product info cards linked from Ipon page
+- Show AI-generated insight beneath each goal card based on spending habits
+
+---
+
+## 3. 🎮 FinQuest — Gamified Finance Education
+
+### ✅ Currently Implemented (as `Missions.tsx`)
+- Daily & weekly mission list with static hardcoded missions
+- Mark missions as complete manually with a button
+- XP reward + confetti on completion
+- Basic Negosyante character avatar displayed elsewhere (Home, Palakasan)
+
+### ❌ Missing / Misaligned
+| Gap | Required Behavior |
+|-----|-------------------|
+| **No character leveling narrative / "Negosyante" story** | Module requires a "Sari-sari store" story arc — users level their character through real financial tasks. No character progression story. |
+| **Missions manually marked complete** | Real tasks (loan payments, savings top-ups) should trigger automatic mission completion. Currently ALL missions require a manual button tap. |
+| **No story-based mission system** | Module calls for "story-based missions with Open a sari-sari store narrative." Only flat mission lists exist. |
+| **No weekly challenges with specific rules** | e.g., "Save ₱50 for 7 days straight" — needs the app to verify streaks across 7 days from `deposits` data. |
+| **No community leaderboard (barangay)** | Palakasan exists but it's a separate module. FinQuest should have group/barangay context leaderboards. |
+| **No RAFI CBM module content** | Module specifies using RAFI Micro-finance Capacity Building Modules for gamified education content. No RAFI-specific educational content in missions. |
+| **No avatar progression UI** | AvatarArt component exists, but there's no dedicated level-up screen, avatar customization, or progression story. |
+
+### 🔧 Changes Needed
+- Build a dedicated "Negosyante Journey" story arc screen with stages (Magsasaka → Tindera → Sari-sari → Negosyante)
+- Hook automatic mission completion to: savings deposits, loan repayment log events, Gabay chats, receipt scans
+- Add streak-based weekly challenges with automated verification from `deposits[]` and `transactions[]` data
+- Integrate RAFI CBM educational content as mission descriptions / in-mission learning cards
+- Add barangay/group context to missions (phase 2 — requires Tambayan integration)
+- Design a character progression screen with visual stage upgrades
+
+---
+
+## 4. 🏆 Palakasan Rewards — Voucher Engine
+
+### ✅ Currently Implemented (as `Palakasan.tsx`)
+- Weekly leaderboard with podium (top 3) and ranked list
+- Avatar display, medal icons, weekly XP display
+- Shows user's current rank with helpful messaging
+
+### ❌ Missing / Misaligned
+| Gap | Required Behavior |
+|-----|-------------------|
+| **No voucher redemption system** | Module's core feature: points redeemable for vouchers from local MSMEs and partner e-commerce. Completely absent. |
+| **No points/rewards store** | No rewards catalog, no voucher listings, no redemption flow. |
+| **No real behavior-based point triggers** | Points currently come from any XP event. Module specifies *specific* triggers: on-time loan payments, savings streaks, education module completions. |
+| **Leaderboard has no real data** | Leaderboard reads from `KEYS.leaderboard` which is seeded as mock data. No real multi-user backend. |
+| **No MSME / e-commerce partner integration** | Module specifies partnerships with local MSMEs and e-commerce. No catalog or voucher system. |
+| **No barangay/community scoping** | Leaderboard should be scoped to barangay/RAFI community groups, not a global list. |
+
+### 🔧 Changes Needed
+- Add a **Rewards Store** tab to Palakasan page: voucher listings from local MSME partners
+- Build a voucher redemption flow with point balance check + confirmation dialog
+- Create a `KEYS.points` balance separate from XP (or derive redeemable points from XP with a conversion rate)
+- Add dedicated point-trigger events: `on-time-payment`, `savings-streak`, `module-completion`
+- Add mock MSME voucher catalog (Coffee voucher, sari-sari discount, e-load, etc.)
+- Add barangay group selector to scope leaderboard
+
+---
+
+## 5. 📊 Gastos Analyzer — Spending Insight AI
+
+### ✅ Currently Implemented
+- Manual gastos logging with category + note
+- AI receipt scanning (camera/upload) via Gemini vision
+- 7-day bar chart and category pie chart in Insights tab
+- AI insight tip showing top spending category
+- XP reward for logging and scanning
+
+### ❌ Missing / Misaligned
+| Gap | Required Behavior |
+|-----|-------------------|
+| **No loan readiness score** | Module explicitly requires a "Loan readiness score" calculated from spending patterns. Absent. |
+| **No financial score per user** | AI categorization exists, but no scoring or financial health metric output. |
+| **AI insight is static/hardcoded** | The "AI insight" card in Insights tab is a hardcoded template string, not a real AI-generated analysis. |
+| **No RAFI loan application tie-in** | Loan readiness score should feed into a "Ready to apply for a RAFI loan?" CTA. |
+
+### 🔧 Changes Needed
+- Add `generateLoanReadinessScore(transactions, goals)` AI function in `ai.ts`
+- Display a **Loan Readiness Score** card in the Insights tab (0–100 score with breakdown)
+- Replace hardcoded "AI insight" with a real `generateSpendingInsight()` Gemini call
+- Add a "Talk to Gabay about my score" CTA that pre-fills a Gabay message
+
+---
+
+## 6. 📖 Kwento ng Pera — AI Credit Narrative
+
+### ✅ Currently Implemented (as `Kwento.tsx`)
+- Interactive story system with branching choices (`KWENTO_STORIES`)
+- AI-generated lesson summary at the end of each story (via Gemini)
+- Story completion tracking + XP reward
+- Story list with completion status
+
+### ❌ Missing / Misaligned
+| Gap | Required Behavior |
+|-----|-------------------|
+| **Module intent is completely different** | Per the spec, Kwento ng Pera should be an **AI-generated credit narrative per user** — *their personal financial journey* (first loan → current standing). The current implementation is a fictional interactive story reader. |
+| **No personal financial story** | Should summarize: payment history, savings growth, income patterns, positive behaviors — as a shareable "credit story" for RAFI loan officers. |
+| **No loan officer sharing feature** | Stories should be shareable/printable as an informal credit profile during loan renewals. |
+| **No payment history data** | App has no concept of loan repayment records to build the narrative from. |
+
+### 🔧 Changes Needed
+- **Option A (Recommended):** Keep `Kwento.tsx` as-is (it's a good educational feature) but rename it to `FinStories` or integrate it into FinQuest. Create a **new** Kwento ng Pera page focused on the personal credit narrative.
+- Build a `generateCreditNarrative(profile, transactions, goals)` AI function
+- Add loan repayment data model (`LoanPayment[]`) to storage
+- Build a personal narrative UI: timeline-style view of the user's financial journey
+- Add a "Share with RAFI Officer" button (copy to clipboard / generate PDF or QR share)
+- Show: first loan date, savings milestones, on-time payments, positive behaviors
+
+---
+
+## 7. 🤝 Tambayan — Community Savings Groups / Digital Paluwagan
+
+### ✅ Currently Implemented (as `Tambayan.tsx`)
+- Community feed / social posts with heart reactions
+- Post timestamp display, author avatar, heart count
+- "Coming soon" toast on the New Post button
+
+### ❌ Missing / Misaligned
+| Gap | Required Behavior |
+|-----|-------------------|
+| **Wrong product entirely** | Current Tambayan is a social feed. Module requires a **digital paluwagan** — a rotating savings group where members commit to weekly/monthly contributions and each member collects once. |
+| **No group creation/joining** | No ability to create or join a paluwagan group with other RAFI clients. |
+| **No contribution tracking** | No concept of members, rounds, payment order, or contribution history. |
+| **No completion reward integration** | Module states that upon paluwagan completion, all members get Kabuhayan Points. Not implemented. |
+| **No RAFI client member system** | Requires a multi-user backend eventually; can be mocked with invite codes for demo. |
+
+### 🔧 Changes Needed
+- Redesign Tambayan page completely as a **Paluwagan Hub**
+- Build group creation flow: group name, member slots, contribution amount, frequency (weekly/monthly), duration
+- Build member invitation (mock: copy link / invite code)
+- Track round-robin payout order and contribution status per member per round
+- Add contribution confirmation flow with XP + points reward on completion
+- Keep social feed as a secondary "Community Wall" tab within Tambayan
+
+---
+
+## Summary Table
+
+| Module | Tab Exists | Core Feature Works | Missing Critical Features |
+|--------|------------|-------------------|--------------------------|
+| **Gabay AI** | ✅ | ✅ Partial (no voice, no RAFI knowledge) | Voice-to-text, RAFI loan/insurance prompts, language toggle |
+| **Ipon Tracker** | ✅ | ✅ Partial (goals/deposits work) | AI savings plan, nudges, RAFI product tie-in |
+| **FinQuest** | ✅ (Missions) | ⚠️ Very basic | Auto-completion triggers, story arc, RAFI CBM content, avatar progression |
+| **Palakasan Rewards** | ✅ | ⚠️ Leaderboard only | Voucher store, MSME catalog, redemption flow, behavior-based triggers |
+| **Gastos Analyzer** | ✅ | ✅ Works well | Loan readiness score, real AI insights (not hardcoded) |
+| **Kwento ng Pera** | ✅ | ⚠️ Wrong product | Personal credit narrative, payment history, loan officer share |
+| **Tambayan** | ✅ | ❌ Wrong product | Digital paluwagan, group creation, round-robin tracking, completion rewards |
+
+---
+
+## Recommended Priority Order
+
+1. **Gabay AI** — Voice input + RAFI system prompt (high demo impact, quick win)
+2. **Gastos Analyzer** — Loan readiness score (ties to RAFI's core product)
+3. **Palakasan Rewards** — Add voucher store tab (high user retention impact)
+4. **Ipon Tracker** — AI savings plan per goal
+5. **FinQuest** — Auto-mission triggers + RAFI CBM content
+6. **Kwento ng Pera** — Rebuild as personal credit narrative
+7. **Tambayan** — Paluwagan redesign (most complex, requires multi-user architecture)
+
+---
+
+> **Note:** All modules currently use `localStorage` for data persistence — no backend. Multi-user features (Palakasan leaderboard, Tambayan paluwagan) will need either a mock/seed data approach for demo or a lightweight backend (Supabase / Firebase) for real implementation.
