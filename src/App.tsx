@@ -6,14 +6,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
-import Ipon from "./pages/Ipon";
-import Gastos from "./pages/Gastos";
+import Coach from "./pages/Coach";
+import Story from "./pages/Story";
 import Missions from "./pages/Missions";
-import Palakasan from "./pages/Palakasan";
-import Tambayan from "./pages/Tambayan";
-import Gabay from "./pages/Gabay";
-import Kwento from "./pages/Kwento";
-import ProfilePage from "./pages/Profile";
+import Insights from "./pages/Insights";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,15 +24,10 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route element={<AppLayout />}>
             <Route path="/home" element={<Home />} />
-            <Route path="/ipon" element={<Ipon />} />
-            <Route path="/gastos" element={<Gastos />} />
+            <Route path="/coach" element={<Coach />} />
+            <Route path="/story" element={<Story />} />
             <Route path="/missions" element={<Missions />} />
-            <Route path="/palakasan" element={<Palakasan />} />
-            <Route path="/tambayan" element={<Tambayan />} />
-            <Route path="/gabay" element={<Gabay />} />
-            <Route path="/kwento" element={<Kwento />} />
-            <Route path="/kwento/:storyId" element={<Kwento />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/insights" element={<Insights />} />
           </Route>
           <Route path="/index" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />

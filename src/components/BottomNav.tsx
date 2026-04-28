@@ -1,13 +1,13 @@
 import { NavLink } from "react-router-dom";
-import { Home, PiggyBank, Receipt, Trophy, User } from "lucide-react";
+import { Home, MessageCircle, BookOpen, Target, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { to: "/home", label: "Home", icon: Home },
-  { to: "/ipon", label: "Ipon", icon: PiggyBank },
-  { to: "/gastos", label: "Gastos", icon: Receipt },
-  { to: "/missions", label: "Quests", icon: Trophy },
-  { to: "/profile", label: "Ako", icon: User },
+  { to: "/coach", label: "Coach", icon: MessageCircle },
+  { to: "/story", label: "Story", icon: BookOpen },
+  { to: "/missions", label: "Missions", icon: Target },
+  { to: "/insights", label: "Insights", icon: BarChart3 },
 ];
 
 export function BottomNav() {

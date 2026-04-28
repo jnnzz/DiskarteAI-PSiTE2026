@@ -61,10 +61,10 @@ export function useLocalStorage<T>(
       if (!detail || detail === key) setValue(read());
     }
     window.addEventListener("storage", onStorage);
-    window.addEventListener("kabuhayan:storage", onCustom);
+    window.addEventListener("diskarte:storage", onCustom);
     return () => {
       window.removeEventListener("storage", onStorage);
-      window.removeEventListener("kabuhayan:storage", onCustom);
+      window.removeEventListener("diskarte:storage", onCustom);
     };
   }, [key, read]);
 
@@ -73,5 +73,5 @@ export function useLocalStorage<T>(
 
 /** Notify all useLocalStorage hooks in this tab to re-read. */
 export function broadcastStorageChange(key?: string): void {
-  window.dispatchEvent(new CustomEvent("kabuhayan:storage", { detail: key }));
+  window.dispatchEvent(new CustomEvent("diskarte:storage", { detail: key }));
 }

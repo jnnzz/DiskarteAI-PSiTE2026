@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { KEYS, blankProfile, type Profile, type BadgeId } from "@/lib/storage";
+import { KEYS, blankProfile, type Profile } from "@/lib/storage";
 import { awardXP } from "@/lib/xp";
 import { celebrateLevelUp } from "@/lib/celebrate";
 import { useCallback } from "react";
@@ -10,15 +10,10 @@ export function useAwardXP() {
   const [, setProfile] = useLocalStorage<Profile>(KEYS.profile, blankProfile);
 
   return useCallback(
-    (amount: number, reason?: string, badge?: BadgeId) => {
+    (amount: number, reason?: string) => {
       setProfile((prev) => {
         const { newProfile, leveledUp, newLevel } = awardXP(prev, amount);
-        if (badge && !newProfile.badges.includes(badge)) {
-          newProfile.badges = [...newProfile.badges, badge];
-        }
         if (leveledUp) {
-          if (newLevel >= 3 && !newProfile.badges.includes("level-3")) newProfile.badges.push("level-3");
-          if (newLevel >= 5 && !newProfile.badges.includes("level-5")) newProfile.badges.push("level-5");
           setTimeout(() => {
             celebrateLevelUp();
             toast.success(`Lvl up! Welcome sa Level ${newLevel}.`, {
