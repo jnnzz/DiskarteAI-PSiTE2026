@@ -1,15 +1,12 @@
 import { cn } from "@/lib/utils";
-import avatar1 from "@/assets/avatar-1.png";
-import avatar3 from "@/assets/avatar-3.png";
-import avatar5 from "@/assets/avatar-5.png";
-import avatar10 from "@/assets/avatar-10.png";
+import avatarUser from "@/assets/avatar-user.png";
 import type { AvatarLevel } from "@/lib/storage";
 
 const SRCS: Record<number, string> = {
-  1: avatar1,
-  3: avatar3,
-  5: avatar5,
-  10: avatar10,
+  1: avatarUser,
+  3: avatarUser,
+  5: avatarUser,
+  10: avatarUser,
 };
 
 interface AvatarArtProps {

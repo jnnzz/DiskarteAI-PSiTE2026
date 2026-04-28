@@ -1,13 +1,15 @@
 import {
   KEYS,
   type Profile,
+  type Budget,
   type SavingsGoal,
   type Transaction,
   type Mission,
-  type LeaderboardEntry,
-  type TambayanPost,
+  type StoryEvent,
+  type DailyCheckin,
   type ChatMessage,
   todayISO,
+  todayDateStr,
   uid,
 } from "./storage";
 import { broadcastStorageChange } from "@/hooks/useLocalStorage";
@@ -25,16 +27,36 @@ function daysFromNow(n: number): string {
   return d.toISOString();
 }
 
+function dateStrAgo(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
 export function seedDemo(): void {
   const profile: Profile = {
     id: uid(),
     name: "Maria",
     avatarLevel: 3,
-    totalXP: 320, // Level 3
+    totalXP: 320,
     streak: 5,
     lastActiveDate: todayISO(),
-    badges: ["first-ipon", "first-gastos", "first-mission", "level-3"],
+    milestonesReached: 4,
     createdAt: daysAgo(28),
+    language: "tagalog",
+  };
+
+  const budget: Budget = {
+    weeklyIncome: 5000,
+    weeklyBudget: 3500,
+    categories: {
+      kainan: 1200,
+      transpo: 500,
+      bills: 800,
+      tindahan: 700,
+      "iba pa": 300,
+    },
+    updatedAt: daysAgo(7),
   };
 
   const goals: SavingsGoal[] = [
@@ -72,76 +94,71 @@ export function seedDemo(): void {
     { id: uid(), type: "gastos", amount: 1250, category: "tindahan", note: "Restock noodles + softdrinks", date: daysAgo(1), source: "manual" },
     { id: uid(), type: "gastos", amount: 320, category: "kainan", date: daysAgo(1), source: "manual" },
     { id: uid(), type: "gastos", amount: 65, category: "transpo", date: daysAgo(2), source: "manual" },
-    { id: uid(), type: "gastos", amount: 1480, category: "bills", note: "Meralco", date: daysAgo(3), source: "manual" },
     { id: uid(), type: "gastos", amount: 195, category: "kainan", date: daysAgo(3), source: "manual" },
     { id: uid(), type: "gastos", amount: 90, category: "iba pa", note: "Load", date: daysAgo(4), source: "manual" },
     { id: uid(), type: "gastos", amount: 410, category: "kainan", date: daysAgo(5), source: "manual" },
     { id: uid(), type: "gastos", amount: 75, category: "transpo", date: daysAgo(5), source: "manual" },
-    { id: uid(), type: "gastos", amount: 2300, category: "tindahan", note: "Bigas + ulam supplies", date: daysAgo(6), source: "manual" },
-    { id: uid(), type: "gastos", amount: 180, category: "kainan", date: daysAgo(6), source: "manual" },
   ];
 
-  // Pre-complete 2 missions
   const missions: Mission[] = defaultMissions().map((m, i) =>
     i < 2 ? { ...m, completed: true, completedAt: daysAgo(1) } : m,
   );
 
-  const leaderboard: LeaderboardEntry[] = [
-    { id: uid(), name: "Aling Nena", avatarVariant: 5, weeklyXP: 480, isCurrentUser: false },
-    { id: uid(), name: "Kuya Jun", avatarVariant: 5, weeklyXP: 410, isCurrentUser: false },
-    { id: uid(), name: "Tita Beth", avatarVariant: 3, weeklyXP: 360, isCurrentUser: false },
-    { id: profile.id, name: "Maria (ikaw)", avatarVariant: 3, weeklyXP: 320, isCurrentUser: true },
-    { id: uid(), name: "Mang Tonyo", avatarVariant: 3, weeklyXP: 280, isCurrentUser: false },
-    { id: uid(), name: "Ate Cris", avatarVariant: 1, weeklyXP: 220, isCurrentUser: false },
-    { id: uid(), name: "Kuya Boy", avatarVariant: 1, weeklyXP: 180, isCurrentUser: false },
-    { id: uid(), name: "Lola Pacing", avatarVariant: 5, weeklyXP: 140, isCurrentUser: false },
+  const storyEvents: StoryEvent[] = [
+    {
+      id: uid(),
+      type: "chapter",
+      title: "Simula ng Paglalakbay",
+      description: "Sinimulan ni Maria ang kanyang financial journey. Unang araw ng pag-track ng gastos.",
+      emoji: "🌱",
+      date: daysAgo(28),
+    },
+    {
+      id: uid(),
+      type: "achievement",
+      title: "Unang Ipon!",
+      description: "Naglagay ng unang ₱500 sa tuition fund ni Junjun. Maliit na hakbang, malaking pangarap.",
+      emoji: "💰",
+      date: daysAgo(20),
+    },
+    {
+      id: uid(),
+      type: "milestone",
+      title: "3-Day Streak!",
+      description: "Tatlong araw na sunod-sunod na nag-log ng gastos. Naging ugali na!",
+      emoji: "🔥",
+      date: daysAgo(14),
+    },
+    {
+      id: uid(),
+      type: "warning",
+      title: "Mahigpit na Linggo",
+      description: "Halos lumampas sa weekly budget dahil sa bills. Pero nakayanan pa rin!",
+      emoji: "⚡",
+      date: daysAgo(7),
+    },
+    {
+      id: uid(),
+      type: "achievement",
+      title: "Level Up: Tindera!",
+      description: "Naabot ang 250 XP at naging Tindera/Tindero sa Negosyante Journey!",
+      emoji: "🏪",
+      date: daysAgo(3),
+    },
   ];
 
-  const tambayan: TambayanPost[] = [
+  const dailyCheckins: DailyCheckin[] = [
     {
-      id: uid(),
-      authorName: "Aling Nena",
-      authorAvatar: 5,
-      content: "Tip ko sa mga kasamahang tindera: maglagay kayo ng ₱20 araw-araw sa hiwalay na lata. Sa katapusan ng buwan, ₱600 na yan — pang-restock o pang-emergency!",
-      hearts: 47,
-      hearted: false,
-      timestamp: daysAgo(1),
+      date: dateStrAgo(1),
+      mood: "okay",
+      message: "Medyo mataas ang gastos kahapon pero kaya pa. Tuloy lang!",
+      budgetRemaining: 1200,
     },
     {
-      id: uid(),
-      authorName: "Kuya Jun",
-      authorAvatar: 5,
-      content: "Tanong lang po — sino dito nakapag-ipon ng emergency fund kahit OFW dependent? Paano niyo ginawa?",
-      hearts: 23,
-      hearted: false,
-      timestamp: daysAgo(2),
-    },
-    {
-      id: uid(),
-      authorName: "Tita Beth",
-      authorAvatar: 3,
-      content: "Natapos ko na yung tuition goal ko! 3 buwan lang, ₱8,000 na-ipon. Salamat sa Gabay AI sa daily tips. 🥹",
-      hearts: 89,
-      hearted: true,
-      timestamp: daysAgo(3),
-    },
-    {
-      id: uid(),
-      authorName: "Mang Tonyo",
-      authorAvatar: 3,
-      content: "Driver ako ng jeep. Dati lahat ng kita, ubos. Ngayon, may ₱50/araw na tinatabi para sa anak ko sa college. Mahirap pero kaya.",
-      hearts: 134,
-      hearted: false,
-      timestamp: daysAgo(4),
-    },
-    {
-      id: uid(),
-      authorName: "Ate Cris",
-      authorAvatar: 1,
-      content: "Kabago lang dito. Saan magsisimula? May suggestions po ba kayo?",
-      hearts: 12,
-      hearted: false,
-      timestamp: daysAgo(5),
+      date: dateStrAgo(0),
+      mood: "good",
+      message: "Magandang umaga, Maria! Mas mababa ang gastos mo ngayon kumpara kahapon. Keep it up! ✨",
+      budgetRemaining: 873,
     },
   ];
 
@@ -149,61 +166,67 @@ export function seedDemo(): void {
     {
       id: uid(),
       role: "user",
-      content: "Gabay, paano ako makakapag-ipon kahit ₱200 lang ang sobra ko per week?",
-      timestamp: daysAgo(2),
+      content: "Gabay, kaya ko bang bumili ng milk tea ngayon?",
+      timestamp: daysAgo(1),
     },
     {
       id: uid(),
       role: "gabay",
-      content: "Ay grabe, Maria — laking bagay na yang ₱200 per week! 'Yan ay ₱10,400 sa isang taon. Gawin natin ganito: ilagay mo agad sa hiwalay na bote o bank account pagdating ng sobra, bago mo pa magamit. 'Yung sinasabi nilang 'pay yourself first.' Try mo for one month, sabihin mo sakin paano!",
-      timestamp: daysAgo(2),
+      content: "Hmm, Maria — ₱120 ang milk tea. Sa ngayon meron ka pang ₱1,200 sa budget this week. Kaya pa naman! Pero tandaan, 3 araw pa bago mag-reset ang weekly budget. Kung madalas ka bumili nito, baka gusto mong i-limit sa 2x per week? 🧋💛",
+      timestamp: daysAgo(1),
     },
   ];
 
   localStorage.setItem(KEYS.profile, JSON.stringify(profile));
+  localStorage.setItem(KEYS.budget, JSON.stringify(budget));
   localStorage.setItem(KEYS.goals, JSON.stringify(goals));
   localStorage.setItem(KEYS.transactions, JSON.stringify(transactions));
   localStorage.setItem(KEYS.missions, JSON.stringify(missions));
-  localStorage.setItem(KEYS.leaderboard, JSON.stringify(leaderboard));
-  localStorage.setItem(KEYS.tambayan, JSON.stringify(tambayan));
+  localStorage.setItem(KEYS.storyEvents, JSON.stringify(storyEvents));
+  localStorage.setItem(KEYS.dailyCheckins, JSON.stringify(dailyCheckins));
   localStorage.setItem(KEYS.chat, JSON.stringify(chat));
-  localStorage.setItem(KEYS.kwento, JSON.stringify([]));
-  localStorage.setItem(KEYS.receipts, JSON.stringify([]));
   localStorage.setItem(KEYS.onboarded, "true");
 
   broadcastStorageChange();
 }
 
-export function seedFresh(): void {
+export function seedFresh(name: string, weeklyBudget: number): void {
   const profile: Profile = {
     id: uid(),
-    name: "Kaibigan",
+    name: name || "Kaibigan",
     avatarLevel: 1,
     totalXP: 0,
     streak: 0,
     lastActiveDate: todayISO(),
-    badges: [],
+    milestonesReached: 0,
     createdAt: todayISO(),
+    language: "tagalog",
   };
 
-  const blankLb: LeaderboardEntry[] = [
-    { id: uid(), name: "Aling Nena", avatarVariant: 5, weeklyXP: 480, isCurrentUser: false },
-    { id: uid(), name: "Kuya Jun", avatarVariant: 5, weeklyXP: 410, isCurrentUser: false },
-    { id: uid(), name: "Tita Beth", avatarVariant: 3, weeklyXP: 360, isCurrentUser: false },
-    { id: uid(), name: "Mang Tonyo", avatarVariant: 3, weeklyXP: 280, isCurrentUser: false },
-    { id: uid(), name: "Ate Cris", avatarVariant: 1, weeklyXP: 220, isCurrentUser: false },
-    { id: profile.id, name: "Ikaw", avatarVariant: 1, weeklyXP: 0, isCurrentUser: true },
-  ];
+  const budget: Budget = {
+    weeklyIncome: weeklyBudget,
+    weeklyBudget: weeklyBudget,
+    categories: {},
+    updatedAt: todayISO(),
+  };
+
+  const firstEvent: StoryEvent = {
+    id: uid(),
+    type: "chapter",
+    title: "Simula ng Paglalakbay",
+    description: `Sinimulan ni ${name || "Kaibigan"} ang kanyang financial journey. Ang unang hakbang sa mas magandang buhay.`,
+    emoji: "🌱",
+    date: todayISO(),
+  };
 
   localStorage.setItem(KEYS.profile, JSON.stringify(profile));
+  localStorage.setItem(KEYS.budget, JSON.stringify(budget));
   localStorage.setItem(KEYS.goals, JSON.stringify([]));
   localStorage.setItem(KEYS.transactions, JSON.stringify([]));
   localStorage.setItem(KEYS.missions, JSON.stringify(defaultMissions()));
-  localStorage.setItem(KEYS.leaderboard, JSON.stringify(blankLb));
-  localStorage.setItem(KEYS.tambayan, JSON.stringify([]));
+  localStorage.setItem(KEYS.storyEvents, JSON.stringify([firstEvent]));
+  localStorage.setItem(KEYS.dailyCheckins, JSON.stringify([]));
   localStorage.setItem(KEYS.chat, JSON.stringify([]));
-  localStorage.setItem(KEYS.kwento, JSON.stringify([]));
-  localStorage.setItem(KEYS.receipts, JSON.stringify([]));
   localStorage.setItem(KEYS.onboarded, "true");
 
   broadcastStorageChange();

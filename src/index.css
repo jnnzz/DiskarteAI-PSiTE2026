@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* KabuhayanAI — Bayanihan Warmth design tokens.
+/* DiskarteAI — Bayanihan Warmth design tokens.
    All colors HSL. Light mode only. */
 
 @layer base {
@@ -88,6 +88,11 @@
   /* Phone-shaped column max width across the app */
   .app-column {
     @apply mx-auto w-full max-w-md;
+  }
+
+  /* Hide scrollbar but keep scrolling */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 

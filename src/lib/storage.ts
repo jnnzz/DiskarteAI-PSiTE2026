@@ -1,5 +1,5 @@
-// KabuhayanAI — typed localStorage shapes & helpers.
-// Designed to map 1:1 to Postgres tables for future migration.
+// DiskarteAI V2 — typed localStorage shapes & helpers.
+// Behavior-driven financial coach data model.
 
 export type GastosCategory = "kainan" | "transpo" | "bills" | "tindahan" | "iba pa";
 
@@ -11,19 +11,6 @@ export const GASTOS_CATEGORIES: { id: GastosCategory; label: string; emoji: stri
   { id: "iba pa", label: "Iba pa", emoji: "✨" },
 ];
 
-export type BadgeId =
-  | "first-ipon"
-  | "first-gastos"
-  | "first-mission"
-  | "streak-7"
-  | "level-3"
-  | "level-5"
-  | "goal-completed"
-  | "kwento-finisher"
-  | "loan-payment"
-  | "paluwagan-member"
-  | "voucher-redeemed";
-
 export type AvatarLevel = 1 | 3 | 5 | 10;
 
 export type Language = "tagalog" | "cebuano" | "english";
@@ -33,14 +20,34 @@ export type Profile = {
   name: string;
   avatarLevel: AvatarLevel;
   totalXP: number;
-  rewardPoints: number;
   streak: number;
   lastActiveDate: string;
-  badges: BadgeId[];
+  milestonesReached: number;
   createdAt: string;
   language: Language;
 };
 
+// ── Budget ────────────────────────────────────────────────────────
+export type Budget = {
+  weeklyIncome: number;
+  weeklyBudget: number;
+  budgetCycle: "weekly" | "monthly";
+  categories: Partial<Record<GastosCategory, number>>;
+  updatedAt: string;
+};
+
+// ── Transactions ──────────────────────────────────────────────────
+export type Transaction = {
+  id: string;
+  type: "gastos" | "kita";
+  amount: number;
+  category: GastosCategory;
+  note?: string;
+  date: string;
+  source: "manual" | "chat" | "voice";
+};
+
+// ── Savings ───────────────────────────────────────────────────────
 export type Deposit = {
   id: string;
   amount: number;
@@ -56,27 +63,23 @@ export type SavingsGoal = {
   deadline: string;
   deposits: Deposit[];
   completed: boolean;
-  aiPlan?: string; // AI-generated savings plan
 };
 
-export type Transaction = {
-  id: string;
-  type: "gastos" | "kita";
-  amount: number;
-  category: GastosCategory;
-  note?: string;
-  date: string;
-  source: "manual" | "receipt-scan";
-  receiptId?: string;
-};
+// ── Missions ──────────────────────────────────────────────────────
+export type CompletionRuleType =
+  | "log-count"           // logged N expenses (today or this week)
+  | "expense-under"       // category spending stays under threshold
+  | "no-expense-category" // zero spending in category today
+  | "budget-check"        // used the spend simulator
+  | "chat-used"           // chatted with Gabay
+  | "savings-deposit"     // made a savings deposit
+  | "stay-under-daily"    // today's total ≤ daily budget
+  | "streak";             // maintain N-day streak
 
-export type Receipt = {
-  id: string;
-  imageDataUrl: string;
-  scannedAt: string;
-  parsedTotal: number;
-  parsedItems: { name: string; price: number }[];
-  suggestedCategory: GastosCategory;
+export type CompletionRule = {
+  type: CompletionRuleType;
+  category?: GastosCategory;   // for category-specific rules
+  threshold?: number;          // ₱ amount or count target
 };
 
 export type Mission = {
@@ -87,17 +90,35 @@ export type Mission = {
   type: "daily" | "weekly";
   completed: boolean;
   completedAt?: string;
-  trigger?: "deposit" | "scan" | "chat" | "loan-payment" | "manual";
+  completionRule: CompletionRule;
+  progress?: number;   // current progress toward target
+  target?: number;     // numeric target for progress bar
+  generatedAt: string; // when this mission was created
+  source: "ai" | "fallback"; // who generated it
 };
 
-export type KwentoProgress = {
-  storyId: string;
-  currentNodeId: string;
-  choicesMade: string[];
-  completed: boolean;
-  aiSummary?: string;
+// ── Story Events ──────────────────────────────────────────────────
+export type StoryEventType = "milestone" | "warning" | "achievement" | "chapter";
+
+export type StoryEvent = {
+  id: string;
+  type: StoryEventType;
+  title: string;
+  description: string;
+  emoji: string;
+  date: string;
+  relatedMissionId?: string;
 };
 
+// ── Daily Check-in ────────────────────────────────────────────────
+export type DailyCheckin = {
+  date: string;          // YYYY-MM-DD
+  mood: "good" | "okay" | "tough";
+  message: string;       // AI-generated feedback
+  budgetRemaining: number;
+};
+
+// ── Chat ──────────────────────────────────────────────────────────
 export type ChatMessage = {
   id: string;
   role: "user" | "gabay";
@@ -105,109 +126,57 @@ export type ChatMessage = {
   timestamp: string;
 };
 
-export type LeaderboardEntry = {
+// ── Payment Reminders ─────────────────────────────────────────────
+export type Reminder = {
   id: string;
-  name: string;
-  avatarVariant: number;
-  weeklyXP: number;
-  isCurrentUser: boolean;
+  title: string;        // e.g. "Tuition Fee"
+  amount: number;        // e.g. 500
+  dueDate: string;       // YYYY-MM-DD
+  note?: string;         // optional extra context
+  completed: boolean;    // mark as paid
+  createdAt: string;     // ISO timestamp when created
+  source: "chat" | "manual";
 };
 
-export type TambayanPost = {
-  id: string;
-  authorName: string;
-  authorAvatar: number;
-  content: string;
-  hearts: number;
-  hearted: boolean;
-  timestamp: string;
-};
-
+// ── Weekly Tip ────────────────────────────────────────────────────
 export type WeeklyTip = {
   text: string;
-  generatedAt: string; // ISO
+  generatedAt: string;
 };
 
-// ── NEW: Loan Payments ─────────────────────────────────────────────
-export type LoanPayment = {
-  id: string;
-  amount: number;
-  dueDate: string;
-  paidDate?: string;
-  onTime: boolean;
-  note?: string;
-  loanType: string; // e.g. "Micro-loan", "Group Loan"
-};
-
-// ── NEW: Paluwagan (Digital Rotating Savings Group) ────────────────
-export type PaluwagaGroup = {
-  id: string;
-  name: string;
-  contributionAmount: number;
-  frequency: "weekly" | "monthly";
-  members: PaluwagaMember[];
-  currentRound: number;
-  totalRounds: number;
-  startDate: string;
-  completed: boolean;
-  inviteCode: string;
-};
-
-export type PaluwagaMember = {
-  id: string;
-  name: string;
-  isCurrentUser: boolean;
-  payoutOrder: number;
-  contributions: PaluwagaContribution[];
-};
-
-export type PaluwagaContribution = {
-  id: string;
-  round: number;
-  amount: number;
-  paidDate?: string;
-  paid: boolean;
-};
-
-// ── NEW: Rewards / Vouchers ────────────────────────────────────────
-export type Voucher = {
-  id: string;
-  title: string;
-  description: string;
-  partner: string;
-  pointsCost: number;
-  category: "food" | "load" | "discount" | "transport" | "business";
-  emoji: string;
-  expiresAt?: string;
-  redeemed?: boolean;
-  redeemedAt?: string;
-};
-
-// Storage keys
+// ── Storage keys ──────────────────────────────────────────────────
 export const KEYS = {
-  profile: "kabuhayan:profile",
-  goals: "kabuhayan:goals",
-  transactions: "kabuhayan:transactions",
-  receipts: "kabuhayan:receipts",
-  missions: "kabuhayan:missions",
-  kwento: "kabuhayan:kwento",
-  chat: "kabuhayan:chat",
-  leaderboard: "kabuhayan:leaderboard",
-  tambayan: "kabuhayan:tambayan",
-  weeklyTip: "kabuhayan:weeklyTip",
-  onboarded: "kabuhayan:onboarded",
-  loanPayments: "kabuhayan:loanPayments",
-  paluwagan: "kabuhayan:paluwagan",
-  vouchers: "kabuhayan:vouchers",
-  creditNarrative: "kabuhayan:creditNarrative",
+  profile: "diskarte:profile",
+  budget: "diskarte:budget",
+  transactions: "diskarte:transactions",
+  goals: "diskarte:goals",
+  missions: "diskarte:missions",
+  storyEvents: "diskarte:storyEvents",
+  dailyCheckins: "diskarte:dailyCheckins",
+  chat: "diskarte:chat",
+  weeklyTip: "diskarte:weeklyTip",
+  onboarded: "diskarte:onboarded",
+  missionMeta: "diskarte:missionMeta",
+  reminders: "diskarte:reminders",
 } as const;
 
+// ── Helpers ───────────────────────────────────────────────────────
 export function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
 
+/** Returns a local ISO-ish string (YYYY-MM-DDTHH:mm:ss) — NOT UTC.
+ *  This ensures dates always align with the user's local calendar. */
 export function todayISO(): string {
-  return new Date().toISOString();
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+export function todayDateStr(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export function formatPeso(amount: number, withDecimals = false): string {
@@ -224,73 +193,24 @@ export function blankProfile(): Profile {
     name: "Kaibigan",
     avatarLevel: 1,
     totalXP: 0,
-    rewardPoints: 0,
     streak: 0,
     lastActiveDate: todayISO(),
-    badges: [],
+    milestonesReached: 0,
     createdAt: todayISO(),
     language: "tagalog",
+  };
+}
+
+export function blankBudget(): Budget {
+  return {
+    weeklyIncome: 0,
+    weeklyBudget: 0,
+    budgetCycle: "weekly",
+    categories: {},
+    updatedAt: todayISO(),
   };
 }
 
 export function clearAll(): void {
   Object.values(KEYS).forEach((k) => localStorage.removeItem(k));
 }
-
-// ── Mock voucher catalog ───────────────────────────────────────────
-export const VOUCHER_CATALOG: Voucher[] = [
-  {
-    id: "v1",
-    title: "₱20 GCash Load",
-    description: "Libreng load sa GCash, pwede ring ibigay sa iba.",
-    partner: "GCash",
-    pointsCost: 200,
-    category: "load",
-    emoji: "📱",
-  },
-  {
-    id: "v2",
-    title: "Libre na Kape",
-    description: "Isang libre na kape sa alinmang RAFI partner café sa Cebu.",
-    partner: "RAFI Partner Café",
-    pointsCost: 150,
-    category: "food",
-    emoji: "☕",
-  },
-  {
-    id: "v3",
-    title: "10% Diskwento sa Sari-sari Store",
-    description: "10% off sa susunod na pagbili sa partner sari-sari stores.",
-    partner: "RAFI MSME Partners",
-    pointsCost: 100,
-    category: "discount",
-    emoji: "🏪",
-  },
-  {
-    id: "v4",
-    title: "₱50 Jeepney e-Discount",
-    description: "₱50 off sa eBayad jeepney load sa partner terminals.",
-    partner: "eBayad",
-    pointsCost: 300,
-    category: "transport",
-    emoji: "🚌",
-  },
-  {
-    id: "v5",
-    title: "Libre na Business Planning Kit",
-    description: "Digital negosyo starter kit para sa iyong sari-sari store.",
-    partner: "RAFI MFI",
-    pointsCost: 500,
-    category: "business",
-    emoji: "📦",
-  },
-  {
-    id: "v6",
-    title: "₱100 Palengke Voucher",
-    description: "₱100 credit sa partner palengke stores sa Cebu.",
-    partner: "RAFI Partner Markets",
-    pointsCost: 400,
-    category: "food",
-    emoji: "🥬",
-  },
-];
