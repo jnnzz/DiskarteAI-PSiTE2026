@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Camera, Flame, MessageCircle, Plus, Sparkles, Trophy } from "lucide-react";
+import { Camera, Flame, MessageCircle, Plus, Sparkles, Trophy, BookOpen, Handshake } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { KEYS, blankProfile, type Profile, type SavingsGoal, type WeeklyTip } from "@/lib/storage";
 import { AvatarArt } from "@/components/AvatarArt";
@@ -134,22 +134,22 @@ export default function Home() {
       {/* Secondary nav cards */}
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         <Link to="/kwento" className="rounded-2xl bg-card p-4 shadow-soft transition-shadow hover:shadow-card">
-          <p className="text-xl">📖</p>
+          <div className="text-primary pb-1 pt-0.5"><BookOpen className="size-5" /></div>
           <p className="mt-1 text-sm font-bold">Kwento ng Pera</p>
           <p className="text-xs text-muted-foreground">Interactive stories</p>
         </Link>
         <Link to="/tambayan" className="rounded-2xl bg-card p-4 shadow-soft transition-shadow hover:shadow-card">
-          <p className="text-xl">🤝</p>
+          <div className="text-primary pb-1 pt-0.5"><Handshake className="size-5" /></div>
           <p className="mt-1 text-sm font-bold">Tambayan</p>
           <p className="text-xs text-muted-foreground">Community feed</p>
         </Link>
         <Link to="/palakasan" className="rounded-2xl bg-card p-4 shadow-soft transition-shadow hover:shadow-card">
-          <p className="text-xl">🏆</p>
+          <div className="text-primary pb-1 pt-0.5"><Trophy className="size-5" /></div>
           <p className="mt-1 text-sm font-bold">Palakasan</p>
           <p className="text-xs text-muted-foreground">Weekly rankings</p>
         </Link>
         <Link to="/gabay" className="rounded-2xl bg-card p-4 shadow-soft transition-shadow hover:shadow-card">
-          <p className="text-xl">💬</p>
+          <div className="text-primary pb-1 pt-0.5"><MessageCircle className="size-5" /></div>
           <p className="mt-1 text-sm font-bold">Gabay AI</p>
           <p className="text-xs text-muted-foreground">Chat coach</p>
         </Link>

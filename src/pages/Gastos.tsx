@@ -26,7 +26,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Camera, Plus, Receipt as ReceiptIcon, Sparkles, Upload, MessageCircle, RefreshCw } from "lucide-react";
+import { Camera, Plus, Receipt as ReceiptIcon, Sparkles, Upload, MessageCircle, RefreshCw, Utensils, Bus, Lightbulb, ShoppingCart } from "lucide-react";
 import { useAwardXP } from "@/hooks/useAwardXP";
 import { analyzeReceipt, generateLoanReadinessScore, generateSpendingInsight, type LoanReadinessResult } from "@/lib/ai";
 import { toast } from "sonner";
@@ -50,6 +50,17 @@ const CATEGORY_COLORS: Record<GastosCategory, string> = {
   bills: "hsl(0 72% 51%)",
   tindahan: "hsl(82 78% 36%)",
   "iba pa": "hsl(30 30% 60%)",
+};
+
+const CategoryIcon = ({ category, className }: { category: GastosCategory | undefined; className?: string }) => {
+  switch (category) {
+    case "kainan": return <Utensils className={className} />;
+    case "transpo": return <Bus className={className} />;
+    case "bills": return <Lightbulb className={className} />;
+    case "tindahan": return <ShoppingCart className={className} />;
+    case "iba pa": return <Sparkles className={className} />;
+    default: return <Sparkles className={className} />;
+  }
 };
 
 function dayKey(iso: string): string {
@@ -269,7 +280,7 @@ export default function Gastos() {
                         : "border-transparent bg-secondary hover:border-border"
                     }`}
                   >
-                    <div className="text-lg">{c.emoji}</div>
+                    <div className="flex justify-center text-primary pb-1 pt-0.5"><CategoryIcon category={c.id} className="size-5" /></div>
                     <div className="text-[10px] font-bold">{c.label}</div>
                   </button>
                 ))}
@@ -296,8 +307,8 @@ export default function Gastos() {
                   const cat = GASTOS_CATEGORIES.find((c) => c.id === t.category);
                   return (
                     <li key={t.id} className="flex items-center gap-3 rounded-xl bg-card px-3 py-2.5 shadow-soft">
-                      <div className="flex size-9 items-center justify-center rounded-lg bg-secondary text-lg">
-                        {cat?.emoji}
+                      <div className="flex size-9 items-center justify-center rounded-lg bg-secondary text-primary">
+                        <CategoryIcon category={cat?.id} className="size-5" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold">{t.note ?? cat?.label}</p>

@@ -14,7 +14,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Plus, PiggyBank, CheckCircle2, Sparkles, RefreshCw, Bell } from "lucide-react";
+import { Plus, PiggyBank, CheckCircle2, Sparkles, RefreshCw, Bell, Building, Handshake, LineChart } from "lucide-react";
 import { useAwardXP } from "@/hooks/useAwardXP";
 import { celebrateGoal } from "@/lib/celebrate";
 import { toast } from "sonner";
@@ -24,17 +24,17 @@ import { cn } from "@/lib/utils";
 // RAFI micro-savings product cards
 const RAFI_PRODUCTS = [
   {
-    emoji: "🏦",
+    icon: Building,
     title: "RAFI Micro-Savings",
     desc: "Buksan ang savings account sa pinakamalapit na RAFI branch. No maintaining balance.",
   },
   {
-    emoji: "🤝",
+    icon: Handshake,
     title: "Samahan Group Savings",
     desc: "Mag-ipon kasama ang grupo. Mas mataas ang commitment at support.",
   },
   {
-    emoji: "📈",
+    icon: LineChart,
     title: "Kabuhayan Loan",
     desc: "Gamitin ang savings history mo para mag-apply ng RAFI Kabuhayan loan para sa negosyo.",
   },
@@ -250,17 +250,20 @@ export default function Ipon() {
 
       {/* RAFI Products section */}
       <div className="mt-6">
-        <h3 className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          🏦 RAFI Savings Products
+        <h3 className="mb-2 flex items-center gap-2 px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <Building className="size-3.5" /> RAFI Savings Products
         </h3>
         <div className="grid gap-2 sm:grid-cols-3">
-          {RAFI_PRODUCTS.map((p) => (
-            <div key={p.title} className="rounded-2xl bg-card p-3 shadow-soft">
-              <p className="text-xl">{p.emoji}</p>
-              <p className="mt-1 text-sm font-bold">{p.title}</p>
-              <p className="text-xs text-muted-foreground">{p.desc}</p>
-            </div>
-          ))}
+          {RAFI_PRODUCTS.map((p) => {
+            const Icon = p.icon;
+            return (
+              <div key={p.title} className="rounded-2xl bg-card p-3 shadow-soft">
+                <div className="text-primary pb-1 pt-0.5"><Icon className="size-5" /></div>
+                <p className="mt-1 text-sm font-bold">{p.title}</p>
+                <p className="text-xs text-muted-foreground">{p.desc}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 

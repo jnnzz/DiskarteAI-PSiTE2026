@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { AvatarArt } from "@/components/AvatarArt";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Star, ShoppingBag, CheckCircle2, AlertCircle } from "lucide-react";
+import { Trophy, Star, ShoppingBag, CheckCircle2, AlertCircle, Lightbulb, Ticket, Coffee, Smartphone, Store, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -75,7 +75,9 @@ export default function Palakasan() {
       {/* Points balance */}
       <div className="mb-4 flex items-center gap-3 rounded-2xl bg-gradient-warm p-[2px] shadow-card">
         <div className="flex w-full items-center gap-3 rounded-[calc(1rem-2px)] bg-card px-4 py-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-highlight/20 text-2xl">⭐</div>
+          <div className="flex size-10 items-center justify-center rounded-xl bg-highlight/20 text-primary">
+            <Star className="size-6 fill-current" />
+          </div>
           <div className="flex-1">
             <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Kabuhayan Points</p>
             <p className="text-2xl font-extrabold text-foreground tabular">{points.toLocaleString()} pts</p>
@@ -89,8 +91,8 @@ export default function Palakasan() {
 
       <Tabs defaultValue="leaderboard">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="leaderboard">🏆 Leaderboard</TabsTrigger>
-          <TabsTrigger value="rewards">🎁 Rewards Store</TabsTrigger>
+          <TabsTrigger value="leaderboard"><Trophy className="mr-2 size-4 text-primary" /> Leaderboard</TabsTrigger>
+          <TabsTrigger value="rewards"><Gift className="mr-2 size-4 text-primary" /> Rewards Store</TabsTrigger>
         </TabsList>
 
         {/* LEADERBOARD TAB */}
@@ -175,7 +177,7 @@ export default function Palakasan() {
         {/* REWARDS STORE TAB */}
         <TabsContent value="rewards" className="mt-4 space-y-4">
           <div className="rounded-2xl bg-secondary p-3 text-sm">
-            <p className="font-semibold">💡 Paano mo kita ang Kabuhayan Points?</p>
+            <p className="font-semibold flex items-center gap-1"><Lightbulb className="size-4 text-primary" /> Paano mo kita ang Kabuhayan Points?</p>
             <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
               <li>• Mag-ipon at mag-deposit sa goals</li>
               <li>• Mag-bayad ng RAFI loan on-time</li>
@@ -193,14 +195,18 @@ export default function Palakasan() {
             <ul className="space-y-3">
               {availableVouchers.map((v) => {
                 const canAfford = points >= v.pointsCost;
+                let Icon = Ticket;
+                if (v.category === "load") Icon = Smartphone;
+                if (v.category === "food") Icon = Coffee;
+                if (v.category === "discount") Icon = Store;
                 return (
                   <li key={v.id} className={cn(
                     "rounded-2xl bg-card p-4 shadow-card transition",
                     !canAfford && "opacity-70"
                   )}>
                     <div className="flex items-start gap-3">
-                      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-2xl">
-                        {v.emoji}
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
+                        <Icon className="size-6" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
@@ -243,18 +249,24 @@ export default function Palakasan() {
                 Na-redeem na
               </h3>
               <ul className="space-y-2">
-                {redeemedVouchers.map((v) => (
-                  <li key={v.id} className="flex items-center gap-3 rounded-xl bg-secondary px-3 py-2.5 opacity-60">
-                    <span className="text-xl">{v.emoji}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold line-through">{v.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Na-redeem {v.redeemedAt ? new Date(v.redeemedAt).toLocaleDateString("en-PH") : ""}
-                      </p>
-                    </div>
-                    <CheckCircle2 className="size-4 text-accent" />
-                  </li>
-                ))}
+                {redeemedVouchers.map((v) => {
+                  let Icon = Ticket;
+                  if (v.category === "load") Icon = Smartphone;
+                  if (v.category === "food") Icon = Coffee;
+                  if (v.category === "discount") Icon = Store;
+                  return (
+                    <li key={v.id} className="flex items-center gap-3 rounded-xl bg-secondary px-3 py-2.5 opacity-60">
+                      <Icon className="size-5 text-primary" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold line-through">{v.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Na-redeem {v.redeemedAt ? new Date(v.redeemedAt).toLocaleDateString("en-PH") : ""}
+                        </p>
+                      </div>
+                      <CheckCircle2 className="size-4 text-accent" />
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
@@ -279,8 +291,11 @@ export default function Palakasan() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mb-4 text-center">
-                <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-2xl bg-secondary text-4xl">
-                  {confirmVoucher.emoji}
+                <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-2xl bg-secondary text-primary">
+                  {confirmVoucher.category === "load" && <Smartphone className="size-8" />}
+                  {confirmVoucher.category === "food" && <Coffee className="size-8" />}
+                  {confirmVoucher.category === "discount" && <Store className="size-8" />}
+                  {confirmVoucher.category !== "load" && confirmVoucher.category !== "food" && confirmVoucher.category !== "discount" && <Ticket className="size-8" />}
                 </div>
                 <h3 className="text-lg font-extrabold">{confirmVoucher.title}</h3>
                 <p className="text-sm text-muted-foreground">{confirmVoucher.partner}</p>
