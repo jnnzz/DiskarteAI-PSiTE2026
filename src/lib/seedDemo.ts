@@ -49,6 +49,7 @@ export function seedDemo(): void {
   const budget: Budget = {
     weeklyIncome: 5000,
     weeklyBudget: 3500,
+    budgetCycle: "weekly",
     categories: {
       kainan: 1200,
       transpo: 500,
@@ -206,6 +207,7 @@ export function seedFresh(name: string, weeklyBudget: number): void {
   const budget: Budget = {
     weeklyIncome: weeklyBudget,
     weeklyBudget: weeklyBudget,
+    budgetCycle: "weekly",
     categories: {},
     updatedAt: todayISO(),
   };
