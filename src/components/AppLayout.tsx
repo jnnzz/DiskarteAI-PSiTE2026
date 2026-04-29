@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 import { SideRail } from "./SideRail";
+import { FloatingChat } from "./FloatingChat";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function AppLayout() {
@@ -27,6 +28,8 @@ export function AppLayout() {
         </div>
       </div>
       <BottomNav />
+      <FloatingChat />
     </div>
   );
 }
+

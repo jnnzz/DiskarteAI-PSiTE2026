@@ -1,5 +1,5 @@
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { KEYS, blankProfile, type Profile, type StoryEvent, type Transaction, type Reminder } from "@/lib/storage";
+import { KEYS, blankProfile, clearAll, type Profile, type StoryEvent, type Transaction, type Reminder } from "@/lib/storage";
 import { NEGOSYANTE_STAGES } from "@/lib/missions";
 import { PageHeader } from "@/components/PageHeader";
 import { AvatarArt } from "@/components/AvatarArt";
@@ -9,8 +9,21 @@ import { ExpenseCalendar } from "@/components/ExpenseCalendar";
 import { ReminderForm } from "@/components/ReminderForm";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
+import { useState } from "react";
+import { seedDemo } from "@/lib/seedDemo";
 
 export default function Story() {
+  const [resetFlash, setResetFlash] = useState(false);
+
+  function handleReset() {
+    setResetFlash(true);
+    setTimeout(() => {
+      clearAll();
+      seedDemo();
+      window.location.reload();
+    }, 400);
+  }
+
   const [profile] = useLocalStorage<Profile>(KEYS.profile, blankProfile);
   const [storyEvents] = useLocalStorage<StoryEvent[]>(KEYS.storyEvents, []);
   const [transactions] = useLocalStorage<Transaction[]>(KEYS.transactions, []);
@@ -118,6 +131,17 @@ export default function Story() {
           </ul>
         </div>
       </div>
+
+      {/* ── Demo Reset Button ─────────────────────────────────────── */}
+      <button
+        onClick={handleReset}
+        className={cn(
+          "mt-6 w-full rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-bold text-destructive transition-all duration-300 hover:bg-destructive/20 active:scale-95",
+          resetFlash && "scale-95 bg-destructive/30"
+        )}
+      >
+        🔄 Reset Demo Data
+      </button>
     </div>
   );
 }

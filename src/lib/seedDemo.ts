@@ -71,8 +71,8 @@ export function seedDemo(): void {
       deposits: [
         { id: uid(), amount: 500, date: daysAgo(20), note: "First deposit" },
         { id: uid(), amount: 800, date: daysAgo(13), note: "Tindahan extra" },
-        { id: uid(), amount: 600, date: daysAgo(6) },
-        { id: uid(), amount: 500, date: daysAgo(1), note: "Sunday savings" },
+        { id: uid(), amount: 600, date: daysAgo(9) },
+        { id: uid(), amount: 500, date: daysAgo(8), note: "Sunday savings" },
       ],
     },
     {
@@ -90,20 +90,18 @@ export function seedDemo(): void {
   ];
 
   const transactions: Transaction[] = [
-    { id: uid(), type: "gastos", amount: 247, category: "kainan", note: "Lunch sa karinderya", date: daysAgo(0), source: "manual" },
-    { id: uid(), type: "gastos", amount: 80, category: "transpo", note: "Jeep + tricycle", date: daysAgo(0), source: "manual" },
-    { id: uid(), type: "gastos", amount: 1250, category: "tindahan", note: "Restock noodles + softdrinks", date: daysAgo(1), source: "manual" },
-    { id: uid(), type: "gastos", amount: 320, category: "kainan", date: daysAgo(1), source: "manual" },
-    { id: uid(), type: "gastos", amount: 65, category: "transpo", date: daysAgo(2), source: "manual" },
-    { id: uid(), type: "gastos", amount: 195, category: "kainan", date: daysAgo(3), source: "manual" },
-    { id: uid(), type: "gastos", amount: 90, category: "iba pa", note: "Load", date: daysAgo(4), source: "manual" },
-    { id: uid(), type: "gastos", amount: 410, category: "kainan", date: daysAgo(5), source: "manual" },
-    { id: uid(), type: "gastos", amount: 75, category: "transpo", date: daysAgo(5), source: "manual" },
+    { id: uid(), type: "gastos", amount: 247, category: "kainan", note: "Lunch sa karinderya", date: daysAgo(1), source: "manual" },
+    { id: uid(), type: "gastos", amount: 80, category: "transpo", note: "Jeep + tricycle", date: daysAgo(1), source: "manual" },
+    { id: uid(), type: "gastos", amount: 1250, category: "tindahan", note: "Restock noodles + softdrinks", date: daysAgo(2), source: "manual" },
+    { id: uid(), type: "gastos", amount: 320, category: "kainan", date: daysAgo(2), source: "manual" },
+    { id: uid(), type: "gastos", amount: 65, category: "transpo", date: daysAgo(3), source: "manual" },
+    { id: uid(), type: "gastos", amount: 195, category: "kainan", date: daysAgo(4), source: "manual" },
+    { id: uid(), type: "gastos", amount: 90, category: "iba pa", note: "Load", date: daysAgo(5), source: "manual" },
+    { id: uid(), type: "gastos", amount: 410, category: "kainan", date: daysAgo(6), source: "manual" },
+    { id: uid(), type: "gastos", amount: 75, category: "transpo", date: daysAgo(6), source: "manual" },
   ];
 
-  const missions: Mission[] = defaultMissions().map((m, i) =>
-    i < 2 ? { ...m, completed: true, completedAt: daysAgo(1) } : m,
-  );
+  const missions: Mission[] = defaultMissions();
 
   const storyEvents: StoryEvent[] = [
     {

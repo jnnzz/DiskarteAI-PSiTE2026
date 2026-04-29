@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useLocalStorage } from "./useLocalStorage";
 import { useBudget } from "./useBudget";
 import { useAwardXP } from "./useAwardXP";
@@ -42,8 +42,8 @@ export function useMissionEngine() {
 
   const budgetData = useBudget();
   const award = useAwardXP();
-  // Track budget-check events via a session counter stored in ref
-  const budgetChecksRef = useRef(0);
+  // Track budget-check events via a session counter stored in state
+  const [budgetChecks, setBudgetChecks] = useState(0);
 
   // ── Daily reset check ───────────────────────────────────────────
   useEffect(() => {
@@ -67,8 +67,8 @@ export function useMissionEngine() {
     todaySpent: budgetData.todaySpent,
     dailyBudget: budgetData.dailyBudget,
     categorySpent: budgetData.categorySpent,
-    budgetChecks: budgetChecksRef.current,
-  }), [transactions, budgetData, profile, chatMessages, goals]);
+    budgetChecks,
+  }), [transactions, budgetData, profile, chatMessages, goals, budgetChecks]);
 
   // ── Auto-completion checker ──────────────────────────────────
   useEffect(() => {
@@ -123,10 +123,8 @@ export function useMissionEngine() {
 
   // ── Budget check signal ──────────────────────────────────────
   const signalBudgetCheck = useCallback(() => {
-    budgetChecksRef.current += 1;
-    // Trigger re-check by touching missions
-    setMissions(prev => [...prev]);
-  }, [setMissions]);
+    setBudgetChecks(prev => prev + 1);
+  }, []);
 
   const activeMissions = useMemo(() => missions.filter(m => !m.completed), [missions]);
   const completedMissions = useMemo(() => missions.filter(m => m.completed), [missions]);
