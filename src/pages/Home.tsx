@@ -127,6 +127,36 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Tip ng linggo + Quick links row */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Weekly Tip */}
+        <div className="rounded-3xl bg-gradient-warm p-[2px] shadow-card">
+          <div className="flex h-full flex-col rounded-[calc(1.5rem-2px)] bg-card p-4">
+            <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+              <Sparkles className="size-4" />
+              <span>Financial Literacy Tip 💡</span>
+            </div>
+            <p className="text-sm leading-relaxed text-foreground">
+              {loadingTip ? "Iniisip ni Gabay..." : tip?.text ?? "Pay yourself first — magtabi bago gumastos."}
+            </p>
+          </div>
+        </div>
+
+        {/* Quick navigation cards */}
+        <div className="grid grid-cols-2 gap-2">
+          <Link to="/coach" className="rounded-2xl bg-card p-4 shadow-soft transition-shadow hover:shadow-card">
+            <MessageCircle className="size-5 text-primary" />
+            <p className="mt-2 text-sm font-bold">Gabay AI</p>
+            <p className="text-[10px] text-muted-foreground">Kausapin ang coach</p>
+          </Link>
+          <Link to="/story" className="rounded-2xl bg-card p-4 shadow-soft transition-shadow hover:shadow-card">
+            <Sparkles className="size-5 text-primary" />
+            <p className="mt-2 text-sm font-bold">My Story</p>
+            <p className="text-[10px] text-muted-foreground">{storyEvents.length} events</p>
+          </Link>
+        </div>
+      </div>
+
       {/* Budget Input */}
       <BudgetInput />
 
@@ -252,35 +282,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Tip ng linggo + Quick links row */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Weekly Tip */}
-        <div className="rounded-3xl bg-gradient-warm p-[2px] shadow-card">
-          <div className="flex h-full flex-col rounded-[calc(1.5rem-2px)] bg-card p-4">
-            <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-              <Sparkles className="size-4" />
-              <span>Financial Literacy Tip 💡</span>
-            </div>
-            <p className="text-sm leading-relaxed text-foreground">
-              {loadingTip ? "Iniisip ni Gabay..." : tip?.text ?? "Pay yourself first — magtabi bago gumastos."}
-            </p>
-          </div>
-        </div>
 
-        {/* Quick navigation cards */}
-        <div className="grid grid-cols-2 gap-2">
-          <Link to="/coach" className="rounded-2xl bg-card p-4 shadow-soft transition-shadow hover:shadow-card">
-            <MessageCircle className="size-5 text-primary" />
-            <p className="mt-2 text-sm font-bold">Gabay AI</p>
-            <p className="text-[10px] text-muted-foreground">Kausapin ang coach</p>
-          </Link>
-          <Link to="/story" className="rounded-2xl bg-card p-4 shadow-soft transition-shadow hover:shadow-card">
-            <Sparkles className="size-5 text-primary" />
-            <p className="mt-2 text-sm font-bold">My Story</p>
-            <p className="text-[10px] text-muted-foreground">{storyEvents.length} events</p>
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }

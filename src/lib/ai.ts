@@ -1,4 +1,4 @@
-import type { GastosCategory, Language, Profile, Budget, Transaction, SavingsGoal, StoryEvent } from "./storage";
+import type { GastosCategory, Language, Profile, Budget, Transaction, SavingsGoal, StoryEvent, Mission } from "./storage";
 import { uid, todayISO } from "./storage";
 
 const GEMINI_API_KEY = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined) ?? "";

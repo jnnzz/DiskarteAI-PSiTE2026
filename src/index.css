@@ -96,6 +96,15 @@
   }
 }
 
+/* Floating Gabay AI button pulse */
+@keyframes gabay-ring-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(17 88% 40% / 0.35); }
+  50% { box-shadow: 0 0 0 8px hsl(17 88% 40% / 0); }
+}
+.gabay-fab-pulse {
+  animation: gabay-ring-pulse 2.5s ease-in-out infinite;
+}
+
 /* Reduced motion: disable celebratory animations */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -103,3 +112,4 @@
     transition-duration: 0.01ms !important;
   }
 }
+
